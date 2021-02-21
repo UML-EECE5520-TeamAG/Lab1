@@ -8,29 +8,41 @@ constexpr unsigned long long kClockCycle = 16000000ULL;
 
 //// Pin constants /////////////////////////////////////////////////////
 
-// Switch button is digtial pin 3
-constexpr int kButtonPin = 3;
+// Switch button is digtial pin 2
+constexpr int kButtonPin = 2;
 
-// Buzzer is digital (pwm) pin 12
-constexpr int kBuzzerPin = 12;
+// Buzzer is digital (pwm) pin 3
+constexpr int kBuzzerPin = 3;
 
-// Red LED is digital pin 5
-constexpr int kRedLedPin = 5;
+// Red LED is digital pin 4
+constexpr int kRedLedPin = 4;
 
-// Yellow LED is digital pin 6
-constexpr int kYellowLedPin = 6;
+// Yellow LED is digital pin 5
+constexpr int kYellowLedPin = 5;
 
-// Green LED is digital pin 7
-constexpr int kGreenLedPin = 7;
+// Green LED is digital pin 6
+constexpr int kGreenLedPin = 6;
 
-// 74HC595 data (DS) is digital pin 8
-constexpr int kShiftRegisterDataPin = 8;
+// 74HC595 data (DS) is digital pin 7
+constexpr int kShiftRegisterDataPin = 7;
 
-// 74HC595 latch (STCP) is digital pin 9
-constexpr int kShiftRegisterLatchPin = 9;
+// 74HC595 latch (STCP - STorage register Clock Pin) is digital pin 8
+constexpr int kShiftRegisterLatchPin = 8;
 
-// 74HC595 clock (SHCP) is digital pin 10
-constexpr int kShiftRegisterClockPin = 10;
+// 74HC595 clock (SHCP) is digital pin 9
+constexpr int kShiftRegisterClockPin = 9;
+
+// Leftmost 7-segment display digit is digital pin 10
+constexpr int kDisplayDigitOnePin = 10;
+
+// Center-left 7-segment display digit is digital pin 11
+constexpr int kDisplayDigitTwoPin = 11;
+
+// Center-right 7-segment display digit is digital pin 12
+constexpr int kDisplayDigitThreePin = 12;
+
+// Rightmost 7-segment display digit is digital pin 13
+constexpr int kDisplayDigitFourPin = 13;
 
 
 //// Hardware Constants ////////////////////////////////////////////////
@@ -52,6 +64,11 @@ constexpr unsigned int kTimerPrescalar = 1024;
 constexpr uint16_t kTimerMatchValue = kClockCycle 
         / (kTimerInterruptFrequency * kTimerPrescalar) - 1UL;
 
+// The delay necessary to debounce the hardware switch
+constexpr unsigned long kDebounceDelay = 50;
+
+// The value of the timer at which the buzzer triggers
+constexpr unsigned int kBuzzerTriggerTime = 3;
 
 // Frequency of buzzer sound in Hz
 constexpr unsigned long long kBuzzerFrequency = 4000ULL;
@@ -66,6 +83,196 @@ constexpr long long kBuzzerTransitionDelay = 1000000LL / (2 * kBuzzerFrequency);
 // The period that the red LED flashes on and off at
 constexpr int kRedLedFlashPeriod = 300;
 
+// Value indicating digit one on the 4 number 7-segment display
+constexpr int kDigitOne = 12;
+
+// Value indicating digit two on the 4 number 7-segment display
+constexpr int kDigitTwo = 9;
+
+// Value indicating digit three on the 4 number 7-segment display
+constexpr int kDigitThree = 8;
+
+// Value indicating digit four on the 4 number 7-segment display
+constexpr int kDigitFour = 6;
+
+// Shift register value indicating that no display segments are on
+constexpr int kNoSegmentsOn = 0b11111111;
+
+// Value indicating segment A (top horizontal line) on one of the
+// 7-segment display digits when sent to the shift register
+constexpr uint8_t kSegmentA = 0b11111110;
+
+// Value indicating segment B (top right vertical line) on one of the
+// 7-segment display digits when sent to the shift register
+constexpr uint8_t kSegmentB = 0b11111101;
+
+// Value indicating segment C (bottom right vertical line) on one of the
+// 7-segment display digits when sent to the shift register
+constexpr uint8_t kSegmentC = 0b11111011;
+
+// Value indicating segment D (bottom horizontal line) on one of the
+// 7-segment display digits when sent to the shift register
+constexpr uint8_t kSegmentD = 0b11110111;
+
+// Value indicating segment E (bottom left vertical line) on one of the
+// 7-segment display digits when sent to the shift register
+constexpr uint8_t kSegmentE = 0b11101111;
+
+// Value indicating segment F (top left vertical line) on one of the
+// 7-segment display digits when sent to the shift register
+constexpr uint8_t kSegmentF = 0b11011111;
+
+// Value indicating segment G (middle horizontal line) on one of the
+// 7-segment display digits when sent to the shift register
+constexpr uint8_t kSegmentG = 0b10111111;
+
+// Value indicating the decimal point on one of the 7-segment display 
+// digits when sent to the shift register
+constexpr uint8_t kDecimalPoint = 0b01111111;
+
+// Shift register value that will output a 0 digit on the seven segment display
+constexpr uint8_t kZero = kSegmentA & kSegmentB & kSegmentC & kSegmentD 
+                & kSegmentE & kSegmentF;
+
+// Shift register value that will output a 1 digit on the seven segment display
+constexpr uint8_t kOne = kSegmentB & kSegmentC;
+
+// Shift register value that will output a 2 digit on the seven segment display
+constexpr uint8_t kTwo = kSegmentA & kSegmentB & kSegmentD & kSegmentE 
+                & kSegmentG;
+
+// Shift register value that will output a 3 digit on the seven segment display
+constexpr uint8_t kThree = kSegmentA & kSegmentB & kSegmentC & kSegmentD 
+                & kSegmentG;
+
+// Shift register value that will output a 4 digit on the seven segment display
+constexpr uint8_t kFour = kSegmentB & kSegmentC & kSegmentF & kSegmentG;
+
+// Shift register value that will output a 5 digit on the seven segment display
+constexpr uint8_t kFive = kSegmentA& kSegmentC & kSegmentD & kSegmentF 
+                & kSegmentG;
+
+// Shift register value that will output a 6 digit on the seven segment display
+constexpr uint8_t kSix = kSegmentA & kSegmentC & kSegmentD & kSegmentE 
+                & kSegmentF & kSegmentG;
+
+// Shift register value that will output a 7 digit on the seven segment display
+constexpr uint8_t kSeven = kSegmentA & kSegmentB & kSegmentC;
+
+// Shift register value that will output a 8 digit on the seven segment display
+constexpr uint8_t kEight = kSegmentA & kSegmentB & kSegmentC & kSegmentD 
+                & kSegmentE & kSegmentF & kSegmentG;
+
+// Shift register value that will output a 9 digit on the seven segment display
+constexpr uint8_t kNine = kSegmentA & kSegmentB & kSegmentC & kSegmentD 
+                & kSegmentF & kSegmentG;
+
+// The seven segment digit shift register values for each timer value
+// (Zero digit is leftmost digit on the seven segment display that is
+// turned on)
+const uint8_t timer_digits[100][2] = {
+    {kZero,  kZero},    // 00
+    {kZero,  kOne},     // 01
+    {kZero,  kTwo},     // 02
+    {kZero,  kThree},   // 03
+    {kZero,  kFour},    // 04
+    {kZero,  kFive},    // 05
+    {kZero,  kSix},     // 06
+    {kZero,  kSeven},   // 07
+    {kZero,  kEight},   // 08
+    {kZero,  kNine},    // 09
+    {kOne,   kZero},    // 10
+    {kOne,   kOne},     // 11
+    {kOne,   kTwo},     // 12
+    {kOne,   kThree},   // 13
+    {kOne,   kFour},    // 14
+    {kOne,   kFive},    // 15
+    {kOne,   kSix},     // 16
+    {kOne,   kSeven},   // 17
+    {kOne,   kEight},   // 18
+    {kOne,   kNine},    // 19
+    {kTwo,   kZero},    // 20
+    {kTwo,   kOne},     // 21
+    {kTwo,   kTwo},     // 22
+    {kTwo,   kThree},   // 23
+    {kTwo,   kFour},    // 24
+    {kTwo,   kFive},    // 25
+    {kTwo,   kSix},     // 26
+    {kTwo,   kSeven},   // 27
+    {kTwo,   kEight},   // 28
+    {kTwo,   kNine},    // 29
+    {kThree, kZero},    // 30
+    {kThree, kOne},     // 31
+    {kThree, kTwo},     // 32
+    {kThree, kThree},   // 33
+    {kThree, kFour},    // 34
+    {kThree, kFive},    // 35
+    {kThree, kSix},     // 36
+    {kThree, kSeven},   // 37
+    {kThree, kEight},   // 38
+    {kThree, kNine},    // 39
+    {kFour,  kZero},    // 40
+    {kFour,  kOne},     // 41
+    {kFour,  kTwo},     // 42
+    {kFour,  kThree},   // 43
+    {kFour,  kFour},    // 44
+    {kFour,  kFive},    // 45
+    {kFour,  kSix},     // 46
+    {kFour,  kSeven},   // 47
+    {kFour,  kEight},   // 48
+    {kFour,  kNine},    // 49
+    {kFive,  kZero},    // 50
+    {kFive,  kOne},     // 51
+    {kFive,  kTwo},     // 52
+    {kFive,  kThree},   // 53
+    {kFive,  kFour},    // 54
+    {kFive,  kFive},    // 55
+    {kFive,  kSix},     // 56
+    {kFive,  kSeven},   // 57
+    {kFive,  kEight},   // 58
+    {kFive,  kNine},    // 59
+    {kSix,   kZero},    // 60
+    {kSix,   kOne},     // 61
+    {kSix,   kTwo},     // 62
+    {kSix,   kThree},   // 63
+    {kSix,   kFour},    // 64
+    {kSix,   kFive},    // 65
+    {kSix,   kSix},     // 66
+    {kSix,   kSeven},   // 67
+    {kSix,   kEight},   // 68
+    {kSix,   kNine},    // 69
+    {kSeven, kZero},    // 70
+    {kSeven, kOne},     // 71
+    {kSeven, kTwo},     // 72
+    {kSeven, kThree},   // 73
+    {kSeven, kFour},    // 74
+    {kSeven, kFive},    // 75
+    {kSeven, kSix},     // 76
+    {kSeven, kSeven},   // 77
+    {kSeven, kEight},   // 78
+    {kSeven, kNine},    // 79
+    {kEight, kZero},    // 80
+    {kEight, kOne},     // 81
+    {kEight, kTwo},     // 82
+    {kEight, kThree},   // 83
+    {kEight, kFour},    // 84
+    {kEight, kFive},    // 85
+    {kEight, kSix},     // 86
+    {kEight, kSeven},   // 87
+    {kEight, kEight},   // 88
+    {kEight, kNine},    // 89
+    {kNine,  kZero},    // 90
+    {kNine,  kOne},     // 91
+    {kNine,  kTwo},     // 92
+    {kNine,  kThree},   // 93
+    {kNine,  kFour},    // 94
+    {kNine,  kFive},    // 95
+    {kNine,  kSix},     // 96
+    {kNine,  kSeven},   // 97
+    {kNine,  kEight},   // 98
+    {kNine,  kNine}     // 99
+};
+
 
 //// State enums, types, and constants /////////////////////////////////
 
@@ -74,14 +281,12 @@ constexpr int kRedLedFlashPeriod = 300;
 enum class States : uint8_t {
     kInit,
     kRedLight,
-    kRedLightIminentChange,
     kGreenLight,
-    kGreenLightIminentChange,
     kYellowLight
 };
 
 // The maximum number of states in the state machine
-constexpr size_t kMaxStates = 6;
+constexpr size_t kMaxStates = 4;
 
 // A defined function pointer type for state functions
 typedef void (*StateFunction)();
@@ -90,9 +295,7 @@ typedef void (*StateFunction)();
 // each index the enumeration value of the next state
 const States next_state[kMaxStates] = {
     States::kRedLight,
-    States::kRedLightIminentChange,
     States::kGreenLight,
-    States::kGreenLightIminentChange,
     States::kYellowLight,
     States::kRedLight
 };
@@ -101,25 +304,10 @@ const States next_state[kMaxStates] = {
 // each index the timer value that triggers the next state transition
 const unsigned int state_timer_limit[kMaxStates] {
     0,
-    12,
     15,
-    12,
     15,
     3
 };
-
-// A constant array indexed by the state enumerations that contains at
-// each index the value that the timer should be set to upon transition
-// to the state used as the array index
-const unsigned int state_timer_reset[kMaxStates] {
-    0,
-    0,
-    12,
-    0,
-    12,
-    0
-};
-
 
 //// Global variables //////////////////////////////////////////////////
 
@@ -129,11 +317,74 @@ volatile States current_state = States::kInit;
 // The current value of the timer in seconds
 volatile unsigned int timer_secs = 0;
 
-// The timer value that triggers the next state transition
-unsigned int timer_limit = 0;
+// Boolean indicating whether red LED is active
+bool red_led_on = false;
+
+// Time that red led was last toggled
+unsigned long red_led_toggle_time = 0;
+
+// Boolean indicating whether buzzer is active
+bool buzzer_on = false;
+
+// Time that buzzer was last toggled
+unsigned long buzzer_toggle_time = 0;
 
 
 //// Hardware Control Functions ////////////////////////////////////////
+
+/**
+ * @brief Displays the current time on the 4-Digit Seven Segment Display
+ * 
+ */
+void DisplayTime(){
+
+    // Turn off all digits
+    digitalWrite(kDisplayDigitOnePin, HIGH);
+    digitalWrite(kDisplayDigitTwoPin, HIGH);
+    digitalWrite(kDisplayDigitThreePin, HIGH);
+    digitalWrite(kDisplayDigitFourPin, HIGH);
+
+    // Turn off shift register output
+    digitalWrite(kShiftRegisterLatchPin, LOW);
+
+    // Send tens digit to shift register (need to invert bits for
+    // numbers to appear properly)
+    shiftOut(kShiftRegisterDataPin, kShiftRegisterClockPin, MSBFIRST, 
+        ~timer_digits[timer_secs % 100][0]);
+
+    // Turn on shift register output
+    digitalWrite(kShiftRegisterLatchPin, HIGH);
+
+    // Update the tens digit
+    digitalWrite(kDisplayDigitThreePin, LOW);
+
+    // Delay briefly
+    delay(5);
+
+    // Turn off all digits
+    digitalWrite(kDisplayDigitOnePin, HIGH);
+    digitalWrite(kDisplayDigitTwoPin, HIGH);
+    digitalWrite(kDisplayDigitThreePin, HIGH);
+    digitalWrite(kDisplayDigitFourPin, HIGH);
+
+    // Turn off shift register output
+    digitalWrite(kShiftRegisterLatchPin, LOW);
+
+    // Send ones digit to shift register (need to invert bits for
+    // numbers to appear properly)
+    shiftOut(kShiftRegisterDataPin, kShiftRegisterClockPin, MSBFIRST, 
+        ~timer_digits[timer_secs % 100][1]);
+
+    // Turn on shift register output
+    digitalWrite(kShiftRegisterLatchPin, HIGH);
+
+    // Update the ones digit
+    digitalWrite(kDisplayDigitFourPin, LOW);
+
+    // Delay briefly
+    delay(5);
+}
+
 
 /**
  * @brief Turns on the green LED light and shuts off all other LEDs
@@ -170,14 +421,21 @@ void RedLight(){
  *        off
  * 
  */
-void FlashRedLight(){
-    digitalWrite(kYellowLedPin, LOW);
-    digitalWrite(kGreenLedPin, LOW);
+void ToggleRedLight(){
+    // Check if the delay time has passed since the last toggle and
+    // if so, toggle the red LED again
+    if(millis() > red_led_toggle_time + kRedLedFlashPeriod /2){
+        // Save current time as the last toggle time
+        red_led_toggle_time = millis();
 
-    digitalWrite(kRedLedPin, HIGH);
-    delay(kRedLedFlashPeriod / 2);
-    digitalWrite(kRedLedPin, LOW);
-    delay(kRedLedFlashPeriod / 2);
+        // Toggle the red LED on variable
+        red_led_on = !red_led_on;
+        
+        // Turn the red LED on or off
+        digitalWrite(kYellowLedPin, LOW);
+        digitalWrite(kGreenLedPin, LOW);
+        digitalWrite(kRedLedPin, red_led_on);
+    } 
 }
 
 /**
@@ -186,12 +444,62 @@ void FlashRedLight(){
  * 
  */
 void BuzzerBeep(){
-    digitalWrite(kBuzzerPin, HIGH);
-    delay(kBuzzerTransitionDelay);
-    digitalWrite(kBuzzerPin, LOW);
-    delay(kBuzzerTransitionDelay);
+    // Check to see if the buzzer should be triggered based on the
+    // current timer time
+    if(timer_secs <= kBuzzerTriggerTime){
+
+        // Check to see if the buxxer should be toggled on/off depending
+        // on the buzzer transition delay
+        if(millis() > buzzer_toggle_time + kBuzzerTransitionDelay){
+
+            // Save the current time as the buzzer toggle time
+            buzzer_toggle_time = millis();
+            
+            // Toggle the buzzer on variable
+            buzzer_on = !buzzer_on;
+
+            // Turn the buzzer on or off
+            digitalWrite(kBuzzerPin, buzzer_on);
+        }
+    }
+    else {
+        // Buzzer should not be on so ensure that it is off
+        digitalWrite(kBuzzerPin, LOW);
+    }
+    
 }
 
+/**
+ * @brief Button interrupt function that checks if the interrut was
+ *        caused by a button press or noise and if the button was
+ *        pressed it will transition state, detach the interrupt, and
+ *        enable timer interrupts
+ * 
+ */
+void CheckButton(){
+    // A static variable (e.g. state persistent across function calls)
+    // that holds the last time that the interrupt function was called
+    static unsigned long last_interrupt_time = 0;
+
+    // Time of the current interrupt
+    unsigned long current_interrupt_time = millis();
+
+    // Check to see if this interrupt was caused by noise or an actual
+    // button press
+    if((current_interrupt_time - last_interrupt_time) > kDebounceDelay){
+        // Change state
+        StateTransition();
+
+        // Remove interrupt attachment (no longer needed)
+        detachInterrupt(digitalPinToInterrupt(kButtonPin));
+
+        // Start timer interrupts
+        EnableTimerInterrupts();
+    }
+
+    // Record current interrupt time for the next interrupt
+    last_interrupt_time = current_interrupt_time;
+}
 
 //// State Transition Functions ////////////////////////////////////////
 
@@ -201,97 +509,22 @@ void BuzzerBeep(){
  * 
  */
 void StateTransition(){
+
+    // Set the current state to the next FSM state
     current_state = next_state[static_cast<size_t>(current_state)];
-    timer_secs = state_timer_reset[static_cast<size_t>(current_state)];
-    timer_limit = state_timer_limit[static_cast<size_t>(current_state)];
-}
 
-/**
- * @brief An interrupt function that changes state from the intial state
- *        upon a button press (triggered on the release of the button)
- *        and disables the interrupt from that point forward
- * 
- */
-void InitTransition(){
-    // Change state
-    StateTransition();
-
-    // Remove interrupt attachment (no longer needed)
-    detachInterrupt(digitalPinToInterrupt(kButtonPin));
-
-    // Start timer interrupts
-    EnableTimerInterrupts();
-}
-
-
-//// State Functions ///////////////////////////////////////////////////
-
-/**
- * @brief A function to perform operations intrinsic to the initial
- *        FSM state
- * 
- */
-void InitState(){
-    FlashRedLight();
-}
-
-/**
- * @brief A function to perform operations intrinsic to the red light
- *        state (before the timer reaches 3 seconds)
- * 
- */
-void RedLightState(){
-    RedLight();
-}
-
-/**
- * @brief A function to perform operations intrinsic to the red light
- *        state as its about to change (the timer is 3 seconds or less)
- * 
- */
-void RedLightIminentChangeState(){
-    RedLight();
-    BuzzerBeep();
-}
-
-/**
- * @brief A function to perform operations intrinsic to the green light
- *        state (before the timer reaches 3 seconds)
- * 
- */
-void GreenLightState(){
-    GreenLight();
-}
-
-/**
- * @brief A function to perform operations intrinsic to the green light
- *        state as its about to change (the timer is 3 seconds or less)
- * 
- */
-void GreenLightIminentChangeState(){
-    GreenLight();
-    BuzzerBeep();
-}
-
-/**
- * @brief A function to perform operations intrinsic to the yellow light
- *        state (before the timer reaches 3 seconds)
- * 
- */
-void YellowLightState(){
-    YellowLight();
-    BuzzerBeep();
+    // Reset the timer to the max countdown time for the state
+    timer_secs = state_timer_limit[static_cast<size_t>(current_state)];
 }
 
 // Make an array of state function pointers to make it easy
-// and fast to transition between each state during the loop
+// and fast to transition between each state functionality during the
+// loop
 const StateFunction state_function[kMaxStates]{
-    &InitState,
-    &RedLightState,
-    &RedLightIminentChangeState,
-    &GreenLightState,
-    &GreenLightIminentChangeState,
-    &YellowLightState
+    &ToggleRedLight,
+    &RedLight,
+    &GreenLight,
+    &YellowLight
 };
 
 
@@ -403,8 +636,15 @@ void DisableTimerInterrupts(){
  * 
  */
 ISR(TIMER1_COMPA_vect){
-    timer_secs++;
-    if(timer_secs >= timer_limit){
+    
+    // Decrement the timer
+    timer_secs--;
+
+    // Check to see if timer has reached zero or, if some unforseen
+    // event occurs and there is integer overflow, whether the timer
+    // value is above the current timer limit
+    if(timer_secs == 0 
+        || timer_secs > state_timer_limit[static_cast<uint8_t>(current_state)]){
         StateTransition();
     }
 }
@@ -417,8 +657,9 @@ ISR(TIMER1_COMPA_vect){
 void setup() {
     // Initialize all variables
     current_state = States::kInit;
-    timer_secs = 0;
-    timer_limit = 0;
+    timer_secs = 99;
+    red_led_toggle_time = 0;
+    buzzer_toggle_time = 0;
 
     // Set pin modes
     pinMode(kButtonPin, INPUT);
@@ -429,12 +670,16 @@ void setup() {
     pinMode(kShiftRegisterDataPin, OUTPUT);
     pinMode(kShiftRegisterLatchPin, OUTPUT);
     pinMode(kShiftRegisterClockPin, OUTPUT);
+    pinMode(kDisplayDigitOnePin, OUTPUT);
+    pinMode(kDisplayDigitTwoPin, OUTPUT);
+    pinMode(kDisplayDigitThreePin, OUTPUT);
+    pinMode(kDisplayDigitFourPin, OUTPUT);
 
     // Set up timer interrupt for timer 1
     SetupTimer();
 
     // Set up button interrupt
-    attachInterrupt(digitalPinToInterrupt(kButtonPin), InitTransition, FALLING);
+    attachInterrupt(digitalPinToInterrupt(kButtonPin), CheckButton, RISING);
 }
 
 /**
@@ -443,4 +688,6 @@ void setup() {
  */
 void loop() {
     state_function[static_cast<size_t>(current_state)]();
+    BuzzerBeep();
+    DisplayTime();
 }
