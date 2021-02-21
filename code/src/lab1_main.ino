@@ -83,18 +83,6 @@ constexpr long long kBuzzerTransitionDelay = 1000000LL / (2 * kBuzzerFrequency);
 // The period that the red LED flashes on and off at
 constexpr int kRedLedFlashPeriod = 300;
 
-// Value indicating digit one on the 4 number 7-segment display
-constexpr int kDigitOne = 12;
-
-// Value indicating digit two on the 4 number 7-segment display
-constexpr int kDigitTwo = 9;
-
-// Value indicating digit three on the 4 number 7-segment display
-constexpr int kDigitThree = 8;
-
-// Value indicating digit four on the 4 number 7-segment display
-constexpr int kDigitFour = 6;
-
 // Shift register value indicating that no display segments are on
 constexpr int kNoSegmentsOn = 0b11111111;
 
